@@ -1,0 +1,11 @@
+1. generate data presents data as it should come in over TLS 
+    (padded to 80 bytes, fully encrypted, 
+    and impossible to use in its current state)
+
+2. my old code passed a pointer to fullData to reallocate it if I read too many lines 
+    (I should build this in later)! . . . if more than ALLOC records
+
+3. converting between char arrays and uint8_t arrays for oaes() - nasty, but should work
+    - the spacing with the bytes and everything is in check, time to make?   
+
+4. can I convert my unpad code from python to C? (might be frustrating)
