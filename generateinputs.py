@@ -53,3 +53,15 @@ for i in range(0, iterations):
 # when done, close the files
 keys.close()
 data.close()
+
+
+# generate DPO and DC keys
+DPO_key_file = open("DPOKey.txt", "wb+")
+DC_key_file = open("DCKey.txt", "wb+")
+
+DPO_key_file.write(os.urandom(16))
+DC_key_file.write(os.urandom(16))
+
+DPO_key_file.close()
+DC_key_file.close()
+

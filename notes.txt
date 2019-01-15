@@ -9,3 +9,42 @@
     - the spacing with the bytes and everything is in check, time to make?   
 
 4. can I convert my unpad code from python to C? (might be frustrating)
+
+REVEAL PROBABLY NEEDS TO BE CALLED FOR EVERY CHARACTER (THUS A POINTER?)
+
+
+NEW STUFF:
+- should I call load_data (to populate io) outside the timer? should this be timed?
+        -> I opted YES
+-??? where should the reveal occur? in main or in called obliv function?
+
+- should my calculating function be void? or obliv? what should the return type be? maybe the array of opersonstructs?
+
+
+<HANDLE THIS> 
+pseudonymize.c:47:21: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+             memcpy((void*)io->keys[count][0], (void*)buffer, sizeof(buffer));
+                     ^
+pseudonymize.c:59:21: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+             memcpy((void*)io->encrypted_data_records[count][0], (void*)buffer, sizeof(buffer));
+
+for linreg, io->src is used from inside the .oc file to load data into two normal 
+    arrays which are then used to feed into the obliv arrays
+
+    however, I load all of the data into the io, outside of the time, 
+    why is it done this way? am I doing it the wrong way?
+
+
+!! MAKE SURE alloc actually matches # of keys!!!!
+
+-----1
+ warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+             memcpy((void*)io->keys[count][0], (void*)buffer, sizeof(buffer));
+                     ^
+pseudonymize.c:59:21: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+             memcpy((void*)io->encrypted_data_records[count][0], (void*)buffer, sizeof(buffer));
+1:55 PM thursday - is my code hanging? or is AES just very slow? linreg is under a second
+
+
+ENCRYPTION KEY = DPO_key XOR DC_key (two 128 bit AES keys?)
+ ->>> WILL THIS WORK?

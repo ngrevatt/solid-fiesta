@@ -1,7 +1,7 @@
 CILPATH=~/obliv-c
 OBLIVCC=$(CILPATH)/bin/oblivcc
 RUNTIME=$(CILPATH)/_build/libobliv.a
-CFLAGS=-g -Wall -D_Float128=double
+CFLAGS=-g -Wall -D_Float128=double 
 LOADLIBES=-lm
 
 ACKPATH=~/absentminded-crypto-kit
@@ -31,11 +31,11 @@ new_full_data:
 # test pseudonymization (run generateinputs.py beforehand, for ex. "make new_full_data")
 
 DPO_pseudonymize:
-	./a.out $(CONNECTION) 1 keys.txt
+	./a.out $(CONNECTION) 1 keys.txt DPOKey.txt
 	# $(./pseudonymize.out)
 
 DC_pseudonymize:
-	./a.out $(CONNECTION) 2 data.txt
+	./a.out $(CONNECTION) 2 data.txt DCKey.txt
 	# $(./pseudonymize.out)
 
 

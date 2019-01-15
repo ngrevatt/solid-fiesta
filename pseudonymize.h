@@ -1,7 +1,7 @@
 #ifndef PSEUDONYMIZE_H
 #define PSEUDONYMIZE_H
 
-#define ALLOC 1 // there are 20 reccords and this is used in pseudonymize.oc as well
+#define ALLOC 20 // there are 20 reccords and this is used in pseudonymize.oc as well
 #define KEYBYTES 16 // 128 bit keys (16 * 8 = 128)
 #define DATABYTES 80 // padded to 80 bytes (or is it chars?)
 
@@ -10,15 +10,19 @@ int computingParty; // for readability
 
 typedef struct {
     char *src; // filename for text file
+    char *keysrc; // filename for DPO/DC key
     uint8_t keys [ALLOC][KEYBYTES]; // change these numbers depending on amount of results
     uint8_t encrypted_data_records[ALLOC][DATABYTES];
     char decrypted_data_records[ALLOC][DATABYTES]; // uint8_t or char here?
     // struct encrypted_record encrypted_data[ALLOC];
     // struct decrypted_record decrypted_data[ALLOC];
     int numRecords; // could be updated by alloc, but I also do not intend to change alloc? (I should build this functionality in, though)
+    uint8_t DPOKey [KEYBYTES]; 
+    uint8_t DCKey [KEYBYTES]; 
 } ProtocolIO;
 
 
+double wallClock();
 void pseudonymize(void* args);
 void load_data(ProtocolIO *io, int party);
 // needed for pseudonymize.oc, NOW uses uint8_t, like Jack's

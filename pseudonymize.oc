@@ -5,15 +5,13 @@
 #include "pseudonymize.h"
 #include "dbg.h"
 
-// #include the AES stuff -> how?
 #include "oaes.oh"
-// I don't think I need gcrypt? (it was in Jack's test)
-
 
 // two functions, if not called with correct party, does nothing
 // also, going CHAR-by-CHAR, though I could use:
 //      - "feedOblivBoolArray(obliv bool  dest[], const bool  src[], size_t n, int party);
 
+// void keysToObliv(ProtocolIO * io, obliv uint8_t keys_obliv[][KEYBYTES], obliv uint8_t DPOKey_obliv[KEYBYTES], int party)
 void keysToObliv(ProtocolIO * io, obliv uint8_t keys_obliv[][KEYBYTES], int party)
 {
 
@@ -26,10 +24,17 @@ void keysToObliv(ProtocolIO * io, obliv uint8_t keys_obliv[][KEYBYTES], int part
                 keys_obliv[i][j] = feedOblivChar(io->keys[i][j], 1);
             }
         }
+
+        /*
+        for (int k = 0; k < KEYBYTES; k++) {
+            DPOKey_obliv[k] = feedOblivChar(io->DPOKey[k], 1);
+        }
+        */
     }
 }
 
 
+// void dataToObliv(ProtocolIO * io, obliv uint8_t encrypted_data_records_obliv[][DATABYTES], obliv uint8_t DCKey_obliv[KEYBYTES], int party)
 void dataToObliv(ProtocolIO * io, obliv uint8_t encrypted_data_records_obliv[][DATABYTES], int party)
 {
     if (party == 2) { // DC -> encrypted data
@@ -40,6 +45,11 @@ void dataToObliv(ProtocolIO * io, obliv uint8_t encrypted_data_records_obliv[][D
             }
         }
     }
+    /*
+    for (int k = 0; k < KEYBYTES; k++) {
+        DCKey_obliv[k] = feedOblivChar(io->DCKey[k], 2);
+    }
+    */
 }
 
 
@@ -47,28 +57,63 @@ void pseudonymize_data(ProtocolIO * io, obliv uint8_t keys_obliv[][KEYBYTES], ob
 
     // this is what will be calculated and recalculated in by AES
     obliv uint8_t decrypted_data_record_obliv[DATABYTES];
+    log_info("decrypted_data_record_obliv string created\n");
 
-    for (int i = 0; i < io->numRecords; i++) {
+    /*
+    // generate shared key by DPO XOR DC key
+    obliv uint8_t shared_key[KEYBYTES];
+    for (int i = 0; i < KEYBYTES; i++) {
+        shared_key[i] = DPOKey_obliv[i] ^ DCKey_obliv[i];
+    }
+    */
+
+    /*
+    for (int i = 0; i < 1; i++) {
         // decrypt the strings, 
         // oaes_128(output, key, input) (these are obliv char, but should be uint8_t
         oaes_128(decrypted_data_record_obliv, keys_obliv[i], data_records_obliv[i]);
-        
-        // reveal decrypted string to both parties (for now), 0 => both parties
-        // REVEAL uint8_t bytes into char array (in io)
-        // size is sizeof(char) * 80, because 80 char array
-        revealOblivCharArray(&io->decrypted_data_records[i], decrypted_data_record_obliv, sizeof(char)*80, 0);
-
-
-        /*
-        // TODO: actually sign this with split keys (how can I pass these)
-        revealOblivChar(&io->nonIdentifiableData[n].email, fullData[n].email, 1);
-        revealOblivInt(&io->nonIdentifiableData[n].EUCitizenship, fullData[n].EUCitizenship, 1);
-
-        // the emails should be encrypted for pseudonymized data
-        oaes_128(encryptedEmail, key, fullData[i].email); // can I call this here? or does it need to be its own obliv? 
-        // (Jack passed the key to one party and the input to another??)
-        */
+        log_info("oaes complete, count is: %d\n", i+1);
+        // revealOblivCharArray(&io->decrypted_data_records[i][0], decrypted_data_record_obliv, sizeof(char) * DATABYTES, 0);
     }
+    */
+
+    obliv uint8_t input[160];
+    obliv uint8_t key[16];
+    obliv uint8_t output[16];
+    uint8_t input_raw[160] = {
+        0xff,0xff,0xff,0xff,0xfc,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+        0x21,0x5a,0x41,0xee,0x44,0x2f,0xa9,0x92,0xa6,0xe3,0x23,0x98,0x6d,0xed,0x3f,0x68,
+        0xff,0xff,0xff,0xff,0xfc,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+        0x21,0x5a,0x41,0xee,0x44,0x2f,0xa9,0x92,0xa6,0xe3,0x23,0x98,0x6d,0xed,0x3f,0x68,
+        0xff,0xff,0xff,0xff,0xfc,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+        0x21,0x5a,0x41,0xee,0x44,0x2f,0xa9,0x92,0xa6,0xe3,0x23,0x98,0x6d,0xed,0x3f,0x68,
+        0xff,0xff,0xff,0xff,0xfc,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+        0x21,0x5a,0x41,0xee,0x44,0x2f,0xa9,0x92,0xa6,0xe3,0x23,0x98,0x6d,0xed,0x3f,0x68,
+        0xff,0xff,0xff,0xff,0xfc,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+        0x21,0x5a,0x41,0xee,0x44,0x2f,0xa9,0x92,0xa6,0xe3,0x23,0x98,0x6d,0xed,0x3f,0x68,
+    };
+    uint8_t key_raw[16] = {
+        0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+    };
+    uint8_t expected_output[16] = {
+        0x21,0x5a,0x41,0xee,0x44,0x2f,0xa9,0x92,0xa6,0xe3,0x23,0x98,0x6d,0xed,0x3f,0x68
+    };
+
+    log_info("about to feed OBLIV\n");
+    for (int ii = 0; ii < 160; ii++) {
+        log_info("ii is %d\n", ii);
+        input[ii] = feedOblivChar(input_raw[ii], 1);
+    }
+    for (int ii = 0; ii < 16; ii++) {
+        log_info("ii is %d\n", ii);
+        key[ii] = feedOblivChar(key_raw[ii], 2);
+    }
+    log_info("OAES ABOUT TO START\n");
+
+    //oaes_128(output, key, input);
+    oaes_128(output, key, input);
+
+    log_info("OAES DONE\n");
 
 }
 
@@ -76,11 +121,6 @@ void pseudonymize_data(ProtocolIO * io, obliv uint8_t keys_obliv[][KEYBYTES], ob
 
 void pseudonymize(void * args)
 {
-    ProtocolIO *io = (ProtocolIO*) args;
-
-    // load_data(io, ocCurrentParty()); // put data in IO
-
-
     //  check_input_count (not relevant for this operation, also not relevant for processing
     //  because the set intersection does not assume full personal data remains?)
 
@@ -100,25 +140,34 @@ void pseudonymize(void * args)
     dataToObliv(&io, data_records_obliv, 2); // populate encrypted strings
     */
 
-    obliv uint8_t * keys_obliv[][KEYBYTES] = calloc(io->numRecords, sizeof(uint8_t) * 16);
-    obliv uint8_t * data_records_obliv[][DATABYTES] = calloc(io->numRecords, sizeof(uint8_t) * 80);
+    ProtocolIO *io = (ProtocolIO*) args;
+    // load_data(io, ocCurrentParty()); // put data in IO
+
+    obliv uint8_t * keys_obliv[][KEYBYTES] = calloc(io->numRecords, sizeof(uint8_t) * KEYBYTES);
+    // obliv uint8_t * DPOKey_obliv[] = calloc(KEYBYTES, sizeof(uint8_t));
+
+    obliv uint8_t * data_records_obliv[][DATABYTES] = calloc(io->numRecords, sizeof(uint8_t) * DATABYTES);
+    // obliv uint8_t * DCKey_obliv[] = calloc(KEYBYTES, sizeof(uint8_t));
 
     // two separate functions so I can pass the array bounds to the function definition
     if (ocCurrentParty() == 1) {
         keysToObliv(&io, keys_obliv, 1); // populate keys
+        // keysToObliv(&io, keys_obliv, DPOKey_obliv, 1); // populate keys
     }
     else {
         dataToObliv(&io, data_records_obliv, 2); // populate encrypted strings
+        // dataToObliv(&io, data_records_obliv, DCKey_obliv, 2); // populate encrypted strings
     }
     
     log_info("ToObliv complete, about to pseudonymize\n");
 
-    // TODO
     pseudonymize_data(io, keys_obliv, data_records_obliv); // add oAESEncryptionKey
 
-    // free
-    free(keys_obliv);
-    free(data_records_obliv);
+    log_info("pseudonymize_data completed, returning to .c main\n");
+
+    // free (this causes errors ??)
+    //free(keys_obliv);
+    //free(data_records_obliv);
 }
 
 

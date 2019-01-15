@@ -4,12 +4,14 @@
 #include<time.h>
 #include"util.h"
 
+/*
 double wallClock()
 {
   struct timespec t;
   clock_gettime(CLOCK_REALTIME,&t);
   return t.tv_sec+1e-9*t.tv_nsec;
 }
+*/
 
 void ocTestUtilTcpOrDie(ProtocolDesc* pd,const char* remote_host,
                         const char* port)
